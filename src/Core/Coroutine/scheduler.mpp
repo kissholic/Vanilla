@@ -1,0 +1,13 @@
+/*
+ * File: Scheduler.cpp
+ * Author: kissholic
+ * Copyright (c) 2023 kissholic. All wrongs reserved.
+ */
+
+export module Core.Coroutine.Scheduler;
+
+import Core.Coroutine.Task;
+
+class Scheduler {
+
+};

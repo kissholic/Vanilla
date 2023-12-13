@@ -4,7 +4,7 @@
  * Copyright (c) 2023 kissholic. All wrongs reserved.
  */
 
-export module Core.Coroutine.Task;
+#pragma once
 
 #include <coroutine>
 #include <exception>
@@ -44,7 +44,7 @@ private:
 };
 
 
-export template<typename T>
+template<typename T>
 class co_task;
 
 template<typename T>
@@ -74,8 +74,7 @@ public:
         std::terminate();
     }
 
-    template<typename ValueType>
-        requires std::is_convertible_v<ValueType&&, T>
+    template<std::convertible_to<T> ValueType>
     void return_value(ValueType&& value) noexcept
     {
         ::new (static_cast<void*>(std::addressof(m_value))) T(std::forward(value));
@@ -160,7 +159,7 @@ private:
 };
 
 
-export template<typename T = void>
+template<typename T = void>
 class [[nodiscard]] co_task
 {
 public:

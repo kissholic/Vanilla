@@ -4,9 +4,8 @@
  * Copyright (c) 2023 kissholic. All wrongs reserved.
  */
 
-export module Core.Coroutine.Scheduler;
+#pragma once
 
-import Core.Coroutine.Task;
 
 class Scheduler {
 

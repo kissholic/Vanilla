@@ -4,7 +4,8 @@
  * Copyright (c) 2023 kissholic. All wrongs reserved.
  */
 
-export module Core.Coroutine;
+#pragma oonce
 
-export import Core.Coroutine.Task;
-export import Core.Coroutine.Scheduler;
+#include "generator.hpp"
+#include "scheduler.hpp"
+#include "task.hpp"

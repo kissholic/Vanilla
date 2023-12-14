@@ -6,4 +6,4 @@ set_warnings("error")
 
 
 includes("src")
--- includes("test")
+includes("test")

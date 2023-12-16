@@ -9,4 +9,5 @@ for _, file in ipairs(os.files("*.cpp")) do
         set_default(false)
         add_files(name .. ".cpp")
         add_tests("default")
+        add_deps("Coroutine")
 end

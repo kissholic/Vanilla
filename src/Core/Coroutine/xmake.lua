@@ -1,5 +1,5 @@
 
 
--- target("Coroutine")
---     set_kind("static")
---     add_files("*.hpp")
+target("Coroutine")
+    set_kind("static")
+    add_files("*.cpp")

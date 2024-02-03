@@ -6,7 +6,4 @@
 
 #pragma once
 
-
-class Scheduler {
-
-};
+class Scheduler {};

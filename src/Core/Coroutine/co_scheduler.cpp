@@ -5,5 +5,3 @@
  */
 
 #include "co_scheduler.h"
-
-

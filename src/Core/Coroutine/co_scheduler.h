@@ -13,48 +13,38 @@
 #include <thread>
 #include <vector>
 
-
 class co_sub_scheduler;
 // class co_scheduler;
 
-
 // Single-thread only currently
-class co_sub_scheduler
-{
-    friend class co_scheduler;
+class co_sub_scheduler {
+  friend class co_scheduler;
+
 public:
+  void add_task(std::coroutine_handle<> task) {
+    // std::lock_guard<std::mutex> lock{m_mutex};
+    m_waiters.push(task);
+  }
 
-    void add_task(std::coroutine_handle<> task)
-    {
-        // std::lock_guard<std::mutex> lock{m_mutex};
-        m_waiters.push(task);
+  void schedule() noexcept {
+    while (!m_tasks.empty()) {
+      auto task = m_tasks.front();
+      m_tasks.pop();
+      task.resume();
+
+      if (!task.done()) {
+        m_tasks.push(task);
+      } else {
+        task.destroy();
+      }
     }
-
-    void schedule() noexcept
-    {
-        while(!m_tasks.empty())
-        {
-            auto task = m_tasks.front();
-            m_tasks.pop();
-            task.resume();
-
-            if (!task.done())
-            {
-                m_tasks.push(task);
-            }
-            else
-            {
-                task.destroy();
-            }
-        }
-    }
+  }
 
 private:
-    // std::mutex m_mutex;
-    // std::queue<std::coroutine_handle<>> m_waiters;
-    std::queue<std::coroutine_handle<>> m_tasks;
+  // std::mutex m_mutex;
+  std::queue<std::coroutine_handle<>> m_waiters;
+  std::queue<std::coroutine_handle<>> m_tasks;
 };
-
 
 using co_scheduler = co_sub_scheduler;
 
@@ -81,7 +71,6 @@ using co_scheduler = co_sub_scheduler;
 
 //     ~co_scheduler()
 //     {}
-
 
 //     void schedule() noexcept
 //     {

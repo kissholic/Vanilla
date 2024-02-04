@@ -4,21 +4,26 @@
  * Copyright (c) 2023 kissholic. All wrongs reserved.
  */
 
-
 #include "core/coroutine/generator.h"
 
-#include <iostream>
+#include "GLFW/glfw3.h"
+#include "spdlog/spdlog.h"
+#include "window/graphic_lib.h"
+#include "window/van_window.h"
 
-co_generator<int> test()
-{
-    int i = 0;
-    for (int i = 0; i < 10; i++)
-        co_yield i;
+co_generator<int> test() {
+  int i = 0;
+  for (int i = 0; i < 10; i++)
+    co_yield i;
 }
 
+int main(int argc, char *argv[]) {
+  graphic_lib gl;
+  van_window window{"Vanila", 640, 480};
 
-int main(int argc, char* argv[]) {
-    for (auto i : test())
-        std::cout << i << std::endl;
-    return 0;
+  while (!window) {
+    window.tick();
+  }
+
+  return 0;
 }

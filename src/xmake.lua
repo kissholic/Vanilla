@@ -2,20 +2,24 @@
 -- Add third party libraries
 add_requires("spdlog")
 add_requires("yyjson")
-add_requires("glfw")
+-- add_requires("glfw")  
+-- add_requires("vulkansdk")
+-- add_requires("imgui", {configs = {glfw_vulkan = true}})
 
 includes("Core/")
-includes("window")
+-- includes("window")
 
 target("Vanilla")
     set_kind("binary")
     add_files("*.cpp")
     add_deps(
         "Coroutine",
-        "window"
+        -- "window"
     )
     add_packages(
         "spdlog", 
         "yyjson",
-        "glfw"
+        -- "glfw",
+        -- "imgui",
+        -- "vulkansdk"
     )

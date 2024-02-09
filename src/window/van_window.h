@@ -24,6 +24,8 @@ public:
 
   void tick() noexcept;
 
+  GLFWwindow *get_native() noexcept { return m_window; }
+
 private:
   std::string m_title;
   GLFWwindow *m_window;

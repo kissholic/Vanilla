@@ -15,7 +15,7 @@
 class mem_context {
 private:
   // TODO: Refactor for multi-threads.
-  static mem_context *root_context = nullptr;
+  static mem_context *root_context;
 
 public:
   mem_context(mem_context *parent) : m_parent{parent} {
@@ -25,6 +25,10 @@ public:
 
   virtual ~mem_context() {
     // exit current context
+    if (m_parent) {
+      m_parent->remove_subcontext(this);
+    }
+
     root_context = m_parent;
   }
 
@@ -45,7 +49,14 @@ public:
 
 protected:
   void add_subcontext(mem_context *context) noexcept {
-    m_subcontexts.push_back(context);
+    m_subcontexts.emplace_back(context);
+  }
+
+  void remove_subcontext(mem_context *context) noexcept {
+    ::std::erase_if(m_subcontexts,
+                    [context](::std::unique_ptr<mem_context> &subcontext) {
+                      return subcontext.get() == context;
+                    });
   }
 
 private:
@@ -57,13 +68,15 @@ private:
 // This should be the class of root context.
 class trivial_mem_context : public mem_context {
 public:
-  virtual trivial_mem_context() : mem_context(nullptr) {}
+  trivial_mem_context() : mem_context(nullptr) {}
+
+  ~trivial_mem_context() override {}
 
   virtual void *malloc(::std::size_t size) noexcept override {
     return ::std::malloc(size);
   }
 
-  virtual void free(void *ptr) { return ::std::free(ptr); }
+  virtual void free(void *ptr) noexcept override { return ::std::free(ptr); }
 
   virtual void *realloc(void *ptr, ::std::size_t size) noexcept override {
     return ::std::realloc(ptr, size);
@@ -75,7 +88,7 @@ public:
   }
 
   virtual void *align_alloc(::std::size_t alignment,
-                            ::std::size_t size) noexcept {
+                            ::std::size_t size) noexcept override {
     return ::std::aligned_alloc(alignment, size);
   }
 
@@ -88,9 +101,9 @@ class mono_mem_context : public mem_context {
 public:
   mono_mem_context(mem_context *parent, unsigned int alignment,
                    unsigned int capacity)
-      : m_parent{parent}, m_storage{::std::make_unique<char[]>(
-                              m_parent->aligned_alloc(alignment, capacity))},
-        m_capacity{capacity}, m_occupied{0} {}
+      : mem_context{parent}, m_storage{static_cast<char *>(
+                                 parent->align_alloc(alignment, capacity))},
+        m_capacity{capacity}, m_mark{0} {}
 
   virtual void *malloc(::std::size_t size) noexcept {
     unsigned int old_mark = m_mark;
@@ -102,7 +115,7 @@ public:
   virtual void free(void *ptr) noexcept {}
 
   virtual void *realloc(void *ptr, ::std::size_t size) noexcept {
-    this->malloc(size);
+    return this->malloc(size);
   }
 
   virtual void *calloc(::std::size_t nmemb, ::std::size_t size) noexcept {
@@ -116,4 +129,22 @@ private:
   ::std::unique_ptr<char[]> m_storage;
   unsigned int m_capacity;
   unsigned int m_mark;
+};
+
+class bin_mem_context : public mem_context {
+public:
+  bin_mem_context(mem_context *parent);
+
+  virtual ~bin_mem_context() override;
+
+  virtual void *malloc(::std::size_t size) noexcept override;
+  virtual void free(void *ptr) noexcept override;
+  virtual void *realloc(void *ptr, ::std::size_t size) noexcept override;
+  virtual void *calloc(::std::size_t nmemb,
+                       ::std::size_t size) noexcept override;
+
+private:
+  static constexpr int POOL_NUM = 10;
+
+  struct pool_desc {};
 };

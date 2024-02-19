@@ -5,6 +5,7 @@
  */
 
 #include "graphic_lib.h"
+#define GLFW_INCLUDE_VULKAN
 #include "GLFW/glfw3.h"
 #include "spdlog/spdlog.h"
 

@@ -15,7 +15,7 @@ public:
 private:
   void init_vulkan() noexcept;
   void create_instance() noexcept;
-  void create_device() noexcept;
+  void create_physical_device() noexcept;
 
   void setup_debug_messenger() noexcept;
 

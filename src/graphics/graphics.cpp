@@ -6,6 +6,7 @@
 
 #include "graphics.h"
 #include <GLFW/glfw3.h>
+#include <map>
 #include <spdlog/spdlog.h>
 #include <vector>
 
@@ -21,7 +22,7 @@ const bool enableValidationLayers = true;
 VkResult CreateDebugUtilsMessengerEXT(
     VkInstance instance, VkDebugUtilsMessengerCreateInfoEXT const *pCreateInfo,
     VkAllocationCallbacks const *pAllocator,
-    VkDebugUtilsMessengerEXT *pDebugMessenger) {
+    VkDebugUtilsMessengerEXT *pDebugMessenger) noexcept {
   auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(
       instance, "vkCreateDebugUtilsMessengerEXT");
   if (func != nullptr) {
@@ -41,7 +42,7 @@ void DestroyDebugUtilsMessengerEXT(VkInstance instance,
   }
 }
 
-std::vector<const char *> getRequiredExtensions() {
+std::vector<const char *> getRequiredExtensions() noexcept {
   uint32_t glfwExtensionCount = 0;
   const char **glfwExtensions;
   glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
@@ -66,7 +67,7 @@ debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
 }
 
 void populateDebugMessengerCreateInfo(
-    VkDebugUtilsMessengerCreateInfoEXT &createInfo) {
+    VkDebugUtilsMessengerCreateInfoEXT &createInfo) noexcept {
   createInfo = {};
   createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
   createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |
@@ -76,6 +77,16 @@ void populateDebugMessengerCreateInfo(
                            VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
                            VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
   createInfo.pfnUserCallback = debugCallback;
+}
+
+bool is_device_suitable(VkPhysicalDevice &device) noexcept {
+  VkPhysicalDeviceProperties device_properties;
+  VkPhysicalDeviceFeatures device_features;
+  vkGetPhysicalDeviceProperties(device, &device_properties);
+  vkGetPhysicalDeviceFeatures(device, &device_features);
+
+  return device_properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU &&
+         device_features.geometryShader;
 }
 
 void graphics_context::setup_debug_messenger() noexcept {
@@ -137,7 +148,38 @@ void graphics_context::create_instance() noexcept {
   }
 }
 
+void graphics_context::create_physical_device() noexcept {
+  VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
+  uint32_t device_count = 0;
+  vkEnumeratePhysicalDevices(m_instance, &device_count, nullptr);
+
+  if (device_count == 0) {
+    spdlog::error("failed to find GPU supporting vulkan.");
+    std::terminate();
+  }
+
+  std::vector<VkPhysicalDevice> devices{device_count};
+  vkEnumeratePhysicalDevices(m_instance, &device_count, devices.data());
+
+  std::multimap<int, VkPhysicalDevice> cadidates;
+
+  for (auto &device : devices) {
+    if (is_device_suitable(device)) {
+      physicalDevice = device;
+      break;
+    }
+  }
+
+  if (physicalDevice == VK_NULL_HANDLE) {
+    spdlog::error("failed to find a suitable GPU.");
+    std::terminate();
+  }
+}
+
 void graphics_context::cleanup() noexcept {
+  if (enableValidationLayers) {
+    DestroyDebugUtilsMessengerEXT(m_instance, m_debug_messenger, nullptr);
+  }
   vkDestroyInstance(m_instance, nullptr);
 }
 

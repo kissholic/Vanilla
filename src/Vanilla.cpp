@@ -6,21 +6,17 @@
 
 #include "core/coroutine/generator.h"
 
-// #include "imgui.h"
-// #include "imgui/backends/imgui_impl_glfw.h"
-// #include "imgui/backends/imgui_impl_metal.h"
+#include "imgui.h"
 
-// #include "GLFW/glfw3native.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_vulkan.h"
 
 #include "spdlog/spdlog.h"
-#include "window/graphic_lib.h"
-#include "window/van_window.h"
 
-int main(int argc, char *argv[]) {
-  graphic_lib grah_lib{};
+#define GLFW_INCLUDE_VULKAN
+#include <GLFW/glfw3.h>
 
-  if (!glfwVulkanSupported()) {
-    spdlog::info("vulkan not supported.");
-  }
-  return 0;
-}
+#include "vulkan/vulkan.h"
+#include <bx/uint32_t.h>
+
+int main() { return 0; }

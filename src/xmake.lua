@@ -8,7 +8,7 @@ add_requires("imgui", {configs = {glfw_vulkan = true}})
 add_requires("vulkansdk")
 add_requires("bgfx")
 
-includes("Core/")
+includes("core/")
 includes("window")
 includes("graphics")
 
@@ -26,5 +26,6 @@ target("Vanilla")
         "glfw",
         "imgui",
         "graphics",
-        "bgfx"
+        "bgfx",
+        "io_context"
     )
